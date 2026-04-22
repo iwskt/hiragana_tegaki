@@ -506,7 +506,7 @@
       const fontSize = getGuideFontSize(width, height);
       const centerX = width / 2;
       const centerY = height / 2;
-      const tolerance = modeSelect.value === 'easy' ? fontSize * 14 : fontSize * 22;
+      const tolerance = modeSelect.value === 'easy' ? fontSize * 0.12 : fontSize * 0.09;
 
       offGuideCtx.save();
       offGuideCtx.fillStyle = 'black';
@@ -619,30 +619,42 @@
       return false;
     }
 
+
 function checkTrace() {
-      if (!hasDrawn || strokes.flat().length < 12) {
+      const allPoints = strokes.flat();
+
+      if (!hasDrawn || allPoints.length < 40) {
         showFeedback('Try again!', false);
         lastResultEl.textContent = 'Too short';
         return;
       }
 
-      const allPoints = strokes.flat();
+      const rect = canvasWrap.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
 
-      const hits = allPoints.filter(({ x, y }) => {
-        return isHit(x, y);
-      }).length;
+      const guideData = offGuideCtx.getImageData(0, 0, width, height).data;
+      let guideCount = 0;
+      for (let i = 3; i < guideData.length; i += 4) {
+        if (guideData[i] > 0) guideCount++;
+      }
 
-      const score = hits / allPoints.length;
-      bestScore = Math.max(bestScore, score);
+      const hits = allPoints.filter(({ x, y }) => isHit(x, y)).length;
+
+      const accuracy = hits / allPoints.length;
+      const coverage = hits / guideCount;
+
+      bestScore = Math.max(bestScore, accuracy);
       bestScoreEl.textContent = `${Math.round(bestScore * 100)}%`;
-      lastResultEl.textContent = `${Math.round(score * 100)}%`;
+      lastResultEl.textContent = `${Math.round(accuracy * 100)}%`;
 
-      if (score >= thresholds[modeSelect.value]) {
+      if (accuracy > 0.5 && coverage > 0.15) {
         showFeedback('OK!', true);
       } else {
         showFeedback('Try again!', false);
       }
     }
+
 
     function showFeedback(message, ok) {
       feedbackEl.textContent = message;

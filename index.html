@@ -411,8 +411,8 @@
     ];
 
     const thresholds = {
-      easy: 0.34,
-      normal: 0.45
+      easy: 0.25,
+      normal: 0.35
     };
 
     const canvasWrap = document.getElementById('canvasWrap');
@@ -506,7 +506,7 @@
       const fontSize = getGuideFontSize(width, height);
       const centerX = width / 2;
       const centerY = height / 2;
-      const tolerance = modeSelect.value === 'easy' ? fontSize * 0.12 : fontSize * 0.09;
+      const tolerance = modeSelect.value === 'easy' ? fontSize * 22 : fontSize * 14;
 
       offGuideCtx.save();
       offGuideCtx.fillStyle = 'black';
@@ -580,7 +580,7 @@
       const dx = point.x - lastX;
       const dy = point.y - lastY;
       const distance = Math.hypot(dx, dy);
-      const step = 3;
+      const step = 5;
 
       if (distance > 0) {
         const steps = Math.max(1, Math.floor(distance / step));
@@ -605,7 +605,7 @@
 
     
     function isHit(x, y) {
-      const radius = 10;
+      const radius = 24;
 
       for (let dx = -radius; dx <= radius; dx++) {
         for (let dy = -radius; dy <= radius; dy++) {

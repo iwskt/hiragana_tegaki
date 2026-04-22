@@ -441,7 +441,8 @@
     let currentItem = hiraganaList[displayOrder[currentDisplayIndex]];
     let isDrawing = false;
     let hasDrawn = false;
-    let sampledPoints = [];
+    let strokes = [];
+    let currentStroke = [];
     let lastX = 0;
     let lastY = 0;
     let bestScore = 0;
@@ -522,19 +523,26 @@
     function redrawUserPath() {
       const rect = canvasWrap.getBoundingClientRect();
       drawCtx.clearRect(0, 0, rect.width, rect.height);
-      if (sampledPoints.length < 2) return;
 
-      drawCtx.beginPath();
-      drawCtx.moveTo(sampledPoints[0].x, sampledPoints[0].y);
-      for (let i = 1; i < sampledPoints.length; i++) {
-        drawCtx.lineTo(sampledPoints[i].x, sampledPoints[i].y);
-      }
-      drawCtx.stroke();
+      strokes.forEach(stroke => {
+        if (stroke.length < 2) return;
+
+        drawCtx.beginPath();
+        drawCtx.moveTo(stroke[0].x, stroke[0].y);
+
+        for (let i = 1; i < stroke.length; i++) {
+          drawCtx.lineTo(stroke[i].x, stroke[i].y);
+        }
+
+        drawCtx.stroke();
+      });
     }
 
     function clearDrawing() {
-      sampledPoints = [];
+      strokes = [];
+      currentStroke = [];
       hasDrawn = false;
+
       const rect = canvasWrap.getBoundingClientRect();
       drawCtx.clearRect(0, 0, rect.width, rect.height);
       feedbackEl.className = 'feedback';
@@ -552,17 +560,22 @@
     function beginDraw(event) {
       event.preventDefault();
       const point = getPoint(event);
+
       isDrawing = true;
       hasDrawn = true;
+
+      currentStroke = [];
+      currentStroke.push(point);
+      strokes.push(currentStroke);
+
       lastX = point.x;
       lastY = point.y;
-      sampledPoints.push(point);
-      redrawUserPath();
     }
 
     function moveDraw(event) {
       if (!isDrawing) return;
       event.preventDefault();
+
       const point = getPoint(event);
       const dx = point.x - lastX;
       const dy = point.y - lastY;
@@ -574,12 +587,13 @@
         for (let i = 1; i <= steps; i++) {
           const x = lastX + (dx * i) / steps;
           const y = lastY + (dy * i) / steps;
-          sampledPoints.push({ x, y });
+          currentStroke.push({ x, y });
         }
       }
 
       lastX = point.x;
       lastY = point.y;
+
       redrawUserPath();
     }
 
@@ -590,18 +604,18 @@
     }
 
     function checkTrace() {
-      if (!hasDrawn || sampledPoints.length < 12) {
+      if (!hasDrawn || strokes.flat().length < 12) {
         showFeedback('Try again!', false);
         lastResultEl.textContent = 'Too short';
         return;
       }
 
-      const hits = sampledPoints.filter(({ x, y }) => {
+      const hits = strokes.flat().filter(({ x, y }) => {
         const pixel = offGuideCtx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
         return pixel[3] > 0;
       }).length;
 
-      const score = hits / sampledPoints.length;
+      const score = hits / strokes.flat().length;
       bestScore = Math.max(bestScore, score);
       bestScoreEl.textContent = `${Math.round(bestScore * 100)}%`;
       lastResultEl.textContent = `${Math.round(score * 100)}%`;

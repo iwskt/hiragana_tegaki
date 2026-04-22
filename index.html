@@ -311,7 +311,75 @@
       .toolbar { grid-template-columns: 1fr 1fr; }
       .char-row { align-items: flex-start; }
     }
-  </style>
+  
+/* Hide Best score */
+.stat:has(#bestScore) { display:none !important; }
+
+/* Hide Feedback mode */
+.field:has(#modeSelect) { display:none !important; }
+
+
+.meta {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.meta-grid {
+  grid-column: 1 / 2;
+}
+
+.settings {
+  grid-column: 2 / 3;
+  display: flex !important;
+  align-items: stretch;
+}
+
+.settings .field,
+.meta-grid .stat {
+  width: 100%;
+}
+
+
+.meta-grid {
+  grid-column: 1 / 2;
+}
+
+.settings {
+  grid-column: 2 / 3;
+  display: flex !important;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.settings .field {
+  width: 100%;
+}
+
+
+/* Equal width: Last result and Order */
+.meta {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px;
+}
+
+.meta-grid {
+  grid-column: 1 / 2;
+}
+
+.settings {
+  grid-column: 2 / 3;
+  display: block !important;
+}
+
+.meta-grid .stat,
+.settings .field {
+  width: 100%;
+}
+
+</style>
 </head>
 <body>
   <main class="app">
@@ -390,29 +458,30 @@
         </div>
       </div>
 
-      <div class="footer-note">
-        Tip: this activity is designed for beginners, so the judgment is intentionally gentle. “OK!” means your trace is close enough to the model.
-      </div>
+      
     </section>
   </main>
 
   <script>
-    const hiraganaList = [
-      { char: "あ", roman: "a" }, { char: "い", roman: "i" }, { char: "う", roman: "u" }, { char: "え", roman: "e" }, { char: "お", roman: "o" },
-      { char: "か", roman: "ka" }, { char: "き", roman: "ki" }, { char: "く", roman: "ku" }, { char: "け", roman: "ke" }, { char: "こ", roman: "ko" },
-      { char: "さ", roman: "sa" }, { char: "し", roman: "shi" }, { char: "す", roman: "su" }, { char: "せ", roman: "se" }, { char: "そ", roman: "so" },
-      { char: "た", roman: "ta" }, { char: "ち", roman: "chi" }, { char: "つ", roman: "tsu" }, { char: "て", roman: "te" }, { char: "と", roman: "to" },
-      { char: "な", roman: "na" }, { char: "に", roman: "ni" }, { char: "ぬ", roman: "nu" }, { char: "ね", roman: "ne" }, { char: "の", roman: "no" },
-      { char: "は", roman: "ha" }, { char: "ひ", roman: "hi" }, { char: "ふ", roman: "fu" }, { char: "へ", roman: "he" }, { char: "ほ", roman: "ho" },
-      { char: "ま", roman: "ma" }, { char: "み", roman: "mi" }, { char: "む", roman: "mu" }, { char: "め", roman: "me" }, { char: "も", roman: "mo" },
-      { char: "や", roman: "ya" }, { char: "ゆ", roman: "yu" }, { char: "よ", roman: "yo" },
-      { char: "ら", roman: "ra" }, { char: "り", roman: "ri" }, { char: "る", roman: "ru" }, { char: "れ", roman: "re" }, { char: "ろ", roman: "ro" },
-      { char: "わ", roman: "wa" }, { char: "を", roman: "wo" }, { char: "ん", roman: "n" }
-    ];
+    
+const hiraganaList = [
+  { char: "あ", roman: "a" }, { char: "い", roman: "i" }, { char: "う", roman: "u" }, { char: "え", roman: "e" }, { char: "お", roman: "o" },
+  { char: "か", roman: "ka" }, { char: "き", roman: "ki" }, { char: "く", roman: "ku" }, { char: "け", roman: "ke" }, { char: "こ", roman: "ko" },
+  { char: "さ", roman: "sa" }, { char: "し", roman: "shi" }, { char: "す", roman: "su" }, { char: "せ", roman: "se" }, { char: "そ", roman: "so" },
+  { char: "た", roman: "ta" }, { char: "ち", roman: "chi" }, { char: "つ", roman: "tsu" }, { char: "て", roman: "te" }, { char: "と", roman: "to" },
+  { char: "な", roman: "na" }, { char: "に", roman: "ni" }, { char: "ぬ", roman: "nu" }, { char: "ね", roman: "ne" }, { char: "の", roman: "no" },
+  { char: "は", roman: "ha" }, { char: "ひ", roman: "hi" }, { char: "ふ", roman: "fu" }, { char: "へ", roman: "he" }, { char: "ほ", roman: "ho" },
+  { char: "ま", roman: "ma" }, { char: "み", roman: "mi" }, { char: "む", roman: "mu" }, { char: "め", roman: "me" }, { char: "も", roman: "mo" },
+  { char: "や", roman: "ya" }, { char: "ゆ", roman: "yu" }, { char: "よ", roman: "yo" },
+  { char: "ら", roman: "ra" }, { char: "り", roman: "ri" }, { char: "る", roman: "ru" }, { char: "れ", roman: "re" }, { char: "ろ", roman: "ro" },
+  { char: "わ", roman: "wa" }, { char: "を", roman: "wo" }, { char: "ん", roman: "n" }
+];
+
+
 
     const thresholds = {
-      easy: 0.25,
-      normal: 0.35
+      easy: 0.34,
+      normal: 0.45
     };
 
     const canvasWrap = document.getElementById('canvasWrap');
@@ -506,7 +575,7 @@
       const fontSize = getGuideFontSize(width, height);
       const centerX = width / 2;
       const centerY = height / 2;
-      const tolerance = modeSelect.value === 'easy' ? fontSize * 14 : fontSize * 22;
+      const tolerance = modeSelect.value === 'easy' ? fontSize * 0.12 : fontSize * 0.09;
 
       offGuideCtx.save();
       offGuideCtx.fillStyle = 'black';
@@ -580,7 +649,7 @@
       const dx = point.x - lastX;
       const dy = point.y - lastY;
       const distance = Math.hypot(dx, dy);
-      const step = 5;
+      const step = 3;
 
       if (distance > 0) {
         const steps = Math.max(1, Math.floor(distance / step));
@@ -604,22 +673,6 @@
     }
 
     
-    function isHit(x, y) {
-      const radius = 24;
-
-      for (let dx = -radius; dx <= radius; dx++) {
-        for (let dy = -radius; dy <= radius; dy++) {
-          const px = Math.round(x + dx);
-          const py = Math.round(y + dy);
-
-          const pixel = offGuideCtx.getImageData(px, py, 1, 1).data;
-          if (pixel[3] > 0) return true;
-        }
-      }
-      return false;
-    }
-
-
 function checkTrace() {
   const allPoints = strokes.flat();
 

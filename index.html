@@ -648,7 +648,7 @@ function checkTrace() {
       bestScoreEl.textContent = `${Math.round(bestScore * 100)}%`;
       lastResultEl.textContent = `${Math.round(accuracy * 100)}%`;
 
-      if (accuracy > 0.5 && coverage > 0.15) {
+      if (accuracy > 0.45 && coverage > 0.12) {
         showFeedback('OK!', true);
       } else {
         showFeedback('Try again!', false);
